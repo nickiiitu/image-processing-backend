@@ -21,22 +21,27 @@ export class ProcessingController {
       const parser = parse({
         columns: true,
         skip_empty_lines: true,
+        trim: true,
+        delimiter: ",",
       });
-      console.log(parser, "parserrrr");
 
       parser.on("readable", () => {
         let record: any;
         while ((record = parser.read())) {
-          console.log(record, "recorddd");
-
           const inputImageUrls = record["Input Image URLs"]
             .split(",")
             .map((url: string) => url.trim());
+
+          if (inputImageUrls.length === 0) {
+            console.error("No valid URLs found in record:", record);
+            continue;
+          }
+
           totalImages += inputImageUrls.length;
 
           products.push({
-            serialNumber: record["Serial Number"],
-            productName: record["Product Name"],
+            serialNumber: record["Serial Number"] || record["SerialNumber"],
+            productName: record["Product Name"] || record["ProductName"],
             inputImageUrls,
           });
         }
